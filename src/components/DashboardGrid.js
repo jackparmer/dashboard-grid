@@ -69,23 +69,23 @@ class PlotForm extends React.Component {
     }
 }
 
-    function dfltPlot(){
-		let data = [ {
-		    type: 'scatter',  
-		    x: [1, 2, 3],     // more about "x": #scatter-x 
-		    y: [6, 2, 3],     // #scatter-y 
-		    marker: { color: 'navy'  }
-		}, {
-		    type: 'bar',      // all "bar" chart attributes: #bar 
-		    x: [1, 2, 3],     // more about "x": #bar-x 
-		    y: [6, 2, 3],     // #bar-y 
-		    name: 'bar chart example' // #bar-name 
-		} ];
+function dfltPlot(){
+	let data = [ {
+	    type: 'scatter',  
+	    x: [1, 2, 3],     // more about "x": #scatter-x 
+	    y: [6, 2, 3],     // #scatter-y 
+	    marker: { color: 'navy'  }
+	}, {
+	    type: 'bar',      // all "bar" chart attributes: #bar 
+	    x: [1, 2, 3],     // more about "x": #bar-x 
+	    y: [6, 2, 3],     // #bar-y 
+	    name: 'bar chart example' // #bar-name 
+	} ];
 
-		let lyo = { margins: {t:40, b:40, l:40, r: 40}, autosize: true, showlegend: false };        
-        
-        return { data:data, layout:lyo }
-    };
+	let lyo = { margins: {t:40, b:40, l:40, r: 40}, autosize: true, showlegend: false };        
+
+	return { data:data, layout:lyo }
+};
 
 
 class DashboardGrid extends React.Component{
