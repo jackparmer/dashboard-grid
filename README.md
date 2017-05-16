@@ -1,9 +1,8 @@
 # DashboardGrid
 
-See: https://github.com/jackparmer/dashboard-grid/blob/master/src/components/DashboardGrid.js
+Messy React component for showing how https://github.com/STRML/react-grid-layout can integrate with https://github.com/benjeffery/react-plotlyjs
 
-Messy React component prototype for showing how https://github.com/STRML/react-grid-layout can integrate with https://github.com/benjeffery/react-plotlyjs
-
+See: [/src/components/DashboardGrid.js](https://github.com/jackparmer/dashboard-grid/blob/master/src/components/DashboardGrid.js)
 
 # Demo
 
