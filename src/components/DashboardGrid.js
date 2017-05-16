@@ -153,12 +153,12 @@ class DashboardGrid extends React.Component{
  
 		return (
 		    <div key={i} data-grid={el} >
-                <span style={[styles.cornerIcon, styles.iconLeft]} onClick={this.editPlot.bind(this, i)}>Edit </span>
-                <span style={[styles.cornerIcon, styles.iconRight]} onClick={this.onRemoveItem.bind(this, i)}> x</span>
-                <PlotlyComponent className="plotly-container" id={"plot"+i.toString()} style={styles.plotDivStyle}
+                	<span style={[styles.cornerIcon, styles.iconLeft]} onClick={this.editPlot.bind(this, i)}>Edit </span>
+                	<span style={[styles.cornerIcon, styles.iconRight]} onClick={this.onRemoveItem.bind(this, i)}> x</span>
+                	<PlotlyComponent className="plotly-container" id={"plot"+i.toString()} style={styles.plotDivStyle}
 		                data={el.data} layout={el.layout} config={config}/>
 		    </div>		                        
-        )
+        	)
 	};
 
     onAddItem = () => {
@@ -204,20 +204,20 @@ class DashboardGrid extends React.Component{
             <div>
 
                 <div style={styles.editPanel} >
-				    <button onClick={this.onAddItem} className="button-primary">Add Plot</button>
+			<button onClick={this.onAddItem} className="button-primary">Add Plot</button>
                 </div>
 
-				<ResponsiveReactGridLayout className="layout"
-		    		{...this.props}
-	            	onBreakpointChange={this.onBreakpointChange}
-	            	onLayoutChange={this.onLayoutChange}
-	            	onAddItem={this.onAddItem}
-	            	onRemoveItem={this.onRemoveItem}
-	            	// WidthProvider option
-		            measureBeforeMount={true}
-	            	useCSSTransforms={this.state.mounted}>		                    		         
+		<ResponsiveReactGridLayout className="layout"
+			{...this.props}
+			onBreakpointChange={this.onBreakpointChange}
+			onLayoutChange={this.onLayoutChange}
+			onAddItem={this.onAddItem}
+			onRemoveItem={this.onRemoveItem}
+			// WidthProvider option
+			    measureBeforeMount={true}
+			useCSSTransforms={this.state.mounted}>		                    		         
 	        
-			   			{R.map(this.drawPlotBox, this.state.items)}
+			{R.map(this.drawPlotBox, this.state.items)}
 
                 </ResponsiveReactGridLayout>
 
