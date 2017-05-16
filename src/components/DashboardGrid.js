@@ -107,9 +107,9 @@ class DashboardGrid extends React.Component{
 		mounted: false,
 		layouts: {lg: this.props.initialLayout},
         items: [
-            { x: 0, y:0, w: 4, h:10, i: '0', data: dfltPlot().data, layout: dfltPlot().layout  },
-            { x: 4, y:0, w: 4, h:10, i: '1', data: dfltPlot().data, layout: dfltPlot().layout  },      
-            { x: 8, y:0, w: 4, h:10, i: '2', data: dfltPlot().data, layout: dfltPlot().layout  },      
+			{ x: 0, y:0, w: 4, h:10, i: '0', data: dfltPlot().data, layout: dfltPlot().layout  },
+			{ x: 4, y:0, w: 4, h:10, i: '1', data: dfltPlot().data, layout: dfltPlot().layout  },      
+			{ x: 8, y:0, w: 4, h:10, i: '2', data: dfltPlot().data, layout: dfltPlot().layout  },      
 		],
 		newCounter: 0,
         showPlotForm: false,
