@@ -1,0 +1,71 @@
+import React  from 'react';
+import deepcopy from 'deepcopy';
+
+let createPlotlyComponent = (plotlyInstance) => React.createClass({
+        displayName: 'Plotly',
+        propTypes: {
+            data: React.PropTypes.array,
+            layout: React.PropTypes.object,
+            config: React.PropTypes.object,
+            onClick: React.PropTypes.func,
+            onBeforeHover: React.PropTypes.func,
+            onHover: React.PropTypes.func,
+            onUnHover: React.PropTypes.func,
+            onSelected: React.PropTypes.func
+        },
+
+        attachListeners: function() {
+            if (this.props.onClick)
+                this.container.on('plotly_click', this.props.onClick);
+            if (this.props.onBeforeHover)
+                this.container.on('plotly_beforehover', this.props.onBeforeHover);
+            if (this.props.onHover)
+                this.container.on('plotly_hover', this.props.onHover);
+            if (this.props.onUnHover)
+                this.container.on('plotly_unhover', this.props.onUnHover);
+            if (this.props.onSelected)
+                this.container.on('plotly_selected', this.props.onSelected);
+        },
+
+        shouldComponentUpdate(nextProps) {
+            //TODO logic for detecting change in props
+            return true;
+        },
+
+        componentDidMount() {
+            let {data, layout, config} = this.props;
+            plotlyInstance.newPlot(this.container, data, deepcopy(layout), config); //We clone the layout as plotly mutates it.
+            this.attachListeners();
+        },
+
+        componentDidUpdate(prevProps) {
+            //TODO use minimal update for given changes
+            if (prevProps.data !== this.props.data || prevProps.layout !== this.props.layout || prevProps.config !== this.props.config) {
+                let {data, layout, config} = this.props;
+                plotlyInstance.newPlot(this.container, data, deepcopy(layout), config); //We clone the layout as plotly mutates it.
+                this.attachListeners();
+            }
+        },
+
+        componentWillUnmount: function() {
+            plotlyInstance.purge(this.container);
+        },
+
+        resize: function() {
+            plotlyInstance.Plots.resize(this.container);
+        },
+
+        render: function () {
+            let {data, layout, config, ...other } = this.props;
+            //Remove props that would cause React to warn for unknown props.
+            delete other.onClick;
+            delete other.onBeforeHover;
+            delete other.onHover;
+            delete other.onUnHover;
+            delete other.onSelected;
+
+            return <div {...other} ref={(node) => this.container=node} />
+        }
+    });
+
+export default createPlotlyComponent;

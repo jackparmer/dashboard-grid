@@ -1,7 +1,5 @@
 import React from 'react';
 
-import PlotlyGraph from 'dash-core-components';
-
 import R from 'ramda'
 import Radium from 'radium'
 
@@ -9,7 +7,7 @@ import {Responsive, WidthProvider} from 'react-grid-layout';
 const ResponsiveReactGridLayout = WidthProvider(Responsive);
 
 import Plotly from 'plotly.js';
-import createPlotlyComponent from 'react-plotlyjs';
+import createPlotlyComponent from '../components/plotlyjs.react.js';
 const PlotlyComponent = createPlotlyComponent(Plotly);
 
 import '../css/normalize.css';

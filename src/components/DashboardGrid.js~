@@ -40,7 +40,7 @@ class PlotForm extends React.Component {
 
                 console.log( error, figure );              
                 fig = figure;
-                console.log(fig);
+                console.log('FIG LAYOUT', fig.layout);
                 parent.props.handleSubmit( { data:fig.data, layout:fig.layout } );
         } );
         
