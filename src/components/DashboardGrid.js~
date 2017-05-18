@@ -1,7 +1,5 @@
 import React from 'react';
 
-import PlotlyGraph from 'dash-core-components';
-
 import R from 'ramda'
 import Radium from 'radium'
 
@@ -42,7 +40,7 @@ class PlotForm extends React.Component {
 
                 console.log( error, figure );              
                 fig = figure;
-                console.log('FIG LAYOUT', fig.layout);
+                console.log(fig);
                 parent.props.handleSubmit( { data:fig.data, layout:fig.layout } );
         } );
         
