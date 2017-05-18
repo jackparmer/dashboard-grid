@@ -2008,11 +2008,11 @@
             ], 
             "mode": "markers", 
             "marker": {
-                "color": "rgba(31,119,180,1)"
+                "color": "rgba(31,119,180,0.25)"
             }, 
-            "latsrc": "cpsievert:17082:7205ea", 
+            "latsrc": "cpsievert:17084:403566", 
             "type": "scattermapbox", 
-            "lonsrc": "cpsievert:17082:39b706"
+            "lonsrc": "cpsievert:17084:05797e"
         }
     ], 
     "layout": {
