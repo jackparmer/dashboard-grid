@@ -1,10 +1,15 @@
 import React from 'react';
 
-import R from 'ramda'
-import Radium from 'radium'
+import R from 'ramda';
+import Radium from 'radium';
+
+import * as d3 from 'd3-dsv';
+import * as fs from 'fs';
 
 import {Responsive, WidthProvider} from 'react-grid-layout';
 const ResponsiveReactGridLayout = WidthProvider(Responsive);
+
+import PlotForm from '../components/PlotForm.react.js';
 
 import Plotly from 'plotly.js';
 import createPlotlyComponent from '../components/plotlyjs.react.js';
@@ -15,101 +20,48 @@ import ReactTable from 'react-table'
 import '../css/normalize.css';
 import '../css/skeleton.css';
 import '../css/styles.css';
+import '../css/react-table.css';
 
-class PlotForm extends React.Component {
-    constructor(props) {
-        super(props);
-        this.state = {value: ''};
+import mapJSON from '../../test_data/eb_ob_ggplot2_restyled.json';
+import obDeathsJSON from '../../test_data/eb_ob_barchart.json';
+import obDeathsCumulativeJSON from '../../test_data/eb_ob_line.json';
+import csvJSON from '../../test_data/csv.json';
 
-        this.handleChange = this.handleChange.bind(this);
+function dfltPlot( plotChoice ){
 
-        this.handleFormSubmit = this.handleFormSubmit.bind(this);
-        this.handleFormClose = this.handleFormClose.bind(this);
+    var json;
+
+    switch( plotChoice ){
+        case 1:
+            json = mapJSON; break;
+        case 2: 
+            json = obDeathsJSON; break;
+        case 3:
+            json = obDeathsCumulativeJSON; break;
+        default:
+            json = mapJSON; break;
     }
 
-    handleChange(event) {
-        this.setState({value: event.target.value});
-    }
-
-    handleFormSubmit(event) {
-        event.preventDefault();
-
-        var fig;
-        var parent = this;
-
-        Plotly.d3.json( this.state.value, 
-            function(error, figure) {
-                if( error ){
-                    console.log( error, figure );              
-                    // maybe was a CSV instead
-                    Plotly.d3.csv( this.state.value,
-                        function(error, csv) {
-                            parent.props.handleSubmit( { table: csv } );
-                        });
-                }
-                else{
-                    fig = figure;
-                    console.log('FIG LAYOUT', fig.layout);
-                    parent.props.handleSubmit( { data:fig.data, layout:fig.layout } );
-                }
-        } );
-        
-        //this.props.handleSubmit( { data:fig.data, layout:fig.layout } );
-    }
-
-    handleFormClose(event){
-        this.props.handleClose();
-    }
-
-    render() {
-        return (
-            <form onSubmit={this.handleFormSubmit} style={styles.plotForm}>
-                <label>Link to raw Plotly graph JSON:</label>
-                <input type="text" value={this.state.value} 
-                        onChange={this.handleChange} style={styles.plotLinkInput} />
-                <input type="submit" value="Submit" className="button-primary" />
-                <button onClick={this.handleFormClose} style={styles.cornerIcon} >Close</button>
-                <p>Examples (copy / paste):</p>
-                <p>Map:<br/><a href="#">
-                    https://raw.githubusercontent.com/jackparmer/dashboard-grid/master/test_data/eb_ob_ggplot2_restyled.json
-                </a></p>
-                <p>Outbreak Deaths:<br/><a href="#">
-                    https://raw.githubusercontent.com/jackparmer/dashboard-grid/master/test_data/eb_ob_barchart.json
-                </a></p>
-                <p>Outbreak Deaths (cumulative):<br/><a href="#">
-                    https://raw.githubusercontent.com/jackparmer/dashboard-grid/master/test_data/eb_ob_line.json
-                </a></p>
-                <p>CSV Table:<br/><a href="#">
-                    https://raw.githubusercontent.com/jackparmer/dashboard-grid/master/test_data/eb_ob.csv
-                </a></p>
-            </form>
-        );
-    }
-}
-
-function dfltPlot(){
-	let data = [ {
-	    type: 'scatter',  
-	    x: [1, 2, 3],     // more about "x": #scatter-x 
-	    y: [6, 2, 3],     // #scatter-y 
-	    marker: { color: 'navy'  }
-	}, {
-	    type: 'bar',      // all "bar" chart attributes: #bar 
-	    x: [1, 2, 3],     // more about "x": #bar-x 
-	    y: [6, 2, 3],     // #bar-y 
-	    name: 'bar chart example' // #bar-name 
-	} ];
-
-	let lyo = { margins: {t:40, b:40, l:40, r: 40}, autosize: true, showlegend: false };        
-
-	return { data:data, layout:lyo }
+    return json;
 };
 
+
+function dfltTable(){
+    
+    var csvObj;
+    var csvStr = csvJSON.csv;
+
+    csvObj = d3.csvParse( csvStr );
+
+    return csvObj;
+}
+
+const cf = dfltTable();
 
 class DashboardGrid extends React.Component{
 
 	constructor(props) {
-		super(props);
+		super(props);        
 	};
 
 	static defaultProps = {
@@ -125,15 +77,17 @@ class DashboardGrid extends React.Component{
 		mounted: false,
 		layouts: {lg: this.props.initialLayout},
         items: [
-			{ x: 0, y:0, w: 4, h:10, i: '0', data: dfltPlot().data, layout: dfltPlot().layout  },
-			{ x: 4, y:0, w: 4, h:10, i: '1', data: dfltPlot().data, layout: dfltPlot().layout  },      
-			{ x: 8, y:0, w: 4, h:10, i: '2', data: dfltPlot().data, layout: dfltPlot().layout  },      
+			{ x: 0, y:0, w: 4, h:15, i: '0', figure: dfltPlot(1) },
+			{ x: 4, y:0, w: 4, h:15, i: '1', figure: dfltPlot(2) },      
+			{ x: 8, y:0, w: 4, h:15, i: '2', figure: dfltPlot(3) },      
+            { x: 0, y:30, w: 12, h:15, i: '3', dataTable: dfltTable() },      
 		],
 		newCounter: 0,
         showPlotForm: false,
         plotInEditMode: false,
         newPlot: { data: [], layout: {} },
-        newTable: {}
+        newTable: [],
+        dataSelection: [],
 	};
 
 	componentDidMount = () => {
@@ -163,32 +117,107 @@ class DashboardGrid extends React.Component{
                        displayModeBar: true, 
                        mapboxAccessToken: 'pk.eyJ1IjoiamFja3AiLCJhIjoidGpzN0lXVSJ9.7YK6eRwUNFwd3ODZff6JvA' };
 
+        let getColumnObj = ( firstRow ) => {
+            let columnHeaders = Object.keys( firstRow );
+            let columnKeyVals = columnHeaders.map( function(col){ return { Header: col, accessor: col } } );
+            return columnKeyVals            
+        }
+
 		let i = el.i;
         let drawPlot = true;
 
+        if( el.dataTable !== undefined ){
+            drawPlot = false;
+            let firstTableRow = el.dataTable[0];
+            el.dataColumns = getColumnObj( firstTableRow );            
+        }
+
         if( this.state.plotInEditMode !== false ){
+
+            // Updating an existing plot or table
+
             if( this.state.plotInEditMode === i ){
                 if( this.state.newPlot.data.length !== 0 ){
                     console.log('writing new plot', this.state);
-                    el.data = this.state.newPlot.data;
-                    el.plotly_layout = this.state.newPlot.layout;
+                    el.figure.data = this.state.newPlot.data;
+                    el.figure.layout = this.state.newPlot.layout;
                 }
                 else if( this.state.newTable.length !== 0 ){
                     drawPlot = false;
                     el.dataTable = this.state.newTable;
-                    let columnHeaders = Object.keys( this.state.newTable[0] );
-                    el.dataColumns = [for (col of columnHeaders) { Header: col, accessor: col.toLowerCase() }  ]
+                    let firstTableRow = el.dataTable[0];
+                    el.dataColumns = getColumnObj( firstTableRow );
                 }
             }
 
         }
+
+        var filterTrace = {};
+
+        if( this.state.dataSelection.length > 0 ){
+            if( el.figure !== undefined ){
+
+            let xaxis = el.figure.layout.xaxis.title.toLowerCase();
+            let yaxis = el.figure.layout.yaxis.title.toLowerCase();
+            let xDim, yDim;
+
+            if (xaxis == '' || xaxis == 'date') {
+                xDim = 'PLOTLY_DATE'
+            } else if ( xaxis == 'lon' || xaxis == 'long' ) {
+                xDim = 'LONG'
+            } 
+
+            if (yaxis == 'lat') {
+                yDim = 'LAT';
+            } else if ( yaxis.includes('death') ) {
+                yDim = 'OB_DEATH';
+            }
+            if( yaxis.includes('cumul') ){
+                yDim = 'CS_DEATH';
+            }
+
+            var ds = this.state.dataSelection;
+
+            filterTrace = {  
+                x: ds.map( function( row ){ return row[xDim] } ),
+                y: ds.map( function( row ){ return row[yDim] } ),
+                marker: { color:'red' },
+                mode: 'markers',
+                name: 'Selection'
+            }
+
+            console.log( 'filter trace', filterTrace );
+            }
+            else{
+                el.dataTable = this.state.dataSelection;
+                let firstTableRow = el.dataTable[0];
+                el.dataColumns = getColumnObj( firstTableRow );                          
+            }
+        }
+
         if( drawPlot ){
+
+            var dataClone = R.clone( el.figure.data );
+
+            if( Object.keys(filterTrace).length > 0 ){ 
+                dataClone.push( filterTrace ); 
+            }
+
+            el.figure.layout.dragmode = 'lasso';
+            el.figure.layout.hovermode = 'closest';
+
    		    return (
   		        <div key={i} data-grid={el} >
                 	<span style={[styles.cornerIcon, styles.iconLeft]} onClick={this.editPlot.bind(this, i)}>Edit </span>
                 	<span style={[styles.cornerIcon, styles.iconRight]} onClick={this.onRemoveItem.bind(this, i)}> x</span>
-                	<PlotlyComponent className="plotly-container" id={"plot"+i.toString()} style={styles.plotDivStyle}
-		                data={el.data} layout={el.layout} config={config}/>
+                	<PlotlyComponent 
+                        className="plotly-container" 
+                        id={"plot"+i.toString()} 
+                        style={styles.plotDivStyle}
+                        onSelected={this.filterSelection.bind(this, i)}
+		                data={dataClone} 
+                        layout={el.figure.layout} 
+                        config={config}/>
 		        </div>		                        
         	)
         }else{
@@ -218,8 +247,7 @@ class DashboardGrid extends React.Component{
 			    y: Infinity, // puts it at the bottom
 			    w: 4,
 			    h: 10,
-                data: dfltPlot().data, 
-                layout: dfltPlot().layout
+                figure: dfltPlot(), 
 		    }),
 	    	// Increment the counter to ensure key is always unique.
 	    	newCounter: this.state.newCounter + 1
@@ -229,25 +257,73 @@ class DashboardGrid extends React.Component{
     editPlot = (i) => {
         console.log('edit plot', i)
         this.setState( { plotInEditMode: i.toString(), showPlotForm: true } );
-    }
+    };
+
+    filterSelection = ( i, selectionArray ) => {
+
+        let selectedXPoints = selectionArray.points.map( function ( ea ){ return ea.x } );
+
+
+        let gridItems = this.state.items;
+        let item = gridItems.filter(function( o ) { return o.i == i });
+        let xt = item[0].figure.layout.xaxis.title;
+        
+        console.log( 'xlabel', xt );
+
+        let filterColumn;
+
+        if( [ '', 'Date' ].includes(xt) ){
+            filterColumn = 'PLOTLY_DATE';
+            selectedXPoints = selectedXPoints.map( function(d){
+                    return new Date( d ).toISOString().split('T')[0].replace(/(^|-)0+/g, "$1");
+            } );
+        }
+
+        else if( [ 'Long' ].includes(xt) ){
+            filterColumn = 'LONG';
+        }
+
+        console.log( 'Selected X points: ', selectedXPoints );
+
+        console.log( 'Filter column', filterColumn );
+
+        let matchingRows = cf.filter( function( row ){
+
+                let val = row[filterColumn];
+
+                if( isNaN(val) == false ){
+                    val = Number( row[filterColumn] );
+                }
+                
+                if( selectedXPoints.includes( val ) ){
+                    return row;
+                };
+            } );
+
+        console.log( 'Rows with matching LONG', matchingRows );
+
+        this.setState({ dataSelection: matchingRows });
+
+    };
 
     handleNewPlot = ( newPlotOrTableObj ) => {
         console.log( 'plotting new plot', newPlotOrTableObj );
-        if( newPlotObj.hasOwnProperty('layout') ){  
+        if( newPlotOrTableObj.hasOwnProperty('layout') ){  
             this.setState({ newPlot: newPlotOrTableObj, showPlotForm: false });
         }
         else{
             this.setState({ newTable: newPlotOrTableObj, showPlotForm: false });
         }
-    }
+    };
 
     closePlotForm = () => {
         console.log('closing plot form');
         this.setState({
                     newPlot: { data: [], layout: {} },
+                    newTable: [],
                     plotInEditMode: false, 
                     showPlotForm: false });
-    }   
+    };  
 
     render() {
     	
@@ -289,13 +365,7 @@ var styles = {
     iconRight: { right: '2px' },
     iconLeft: { right: '20px' },
     plotDivStyle: { height: '100%', width: '100%' },
-    editPanel: { position: 'absolute', bottom: '10px', left: '10px', zIndex: 99 },
-    plotForm: { padding: '50px 100px', border: '1px solid #ccc', maxWidth: '700px', 
-                width: '50%', margin: '0 auto', borderRadius: '2px', maxHeight: '450px', 
-                position: 'absolute', left: 0, right: 0, top: '200px', bottom: 0, 
-                background: 'whitesmoke', height: '50%' },
-    plotLinkInput: { width: '100%', padding: '10px', borderRadius: '4px', 
-            border: '1px solid #ccc', margin: '10px 0' }
+    editPanel: { position: 'absolute', top: '10px', left: '10px', zIndex: 99 }
 }
 
 DashboardGrid = Radium(DashboardGrid)

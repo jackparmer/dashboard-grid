@@ -5,7 +5,7 @@
             "ysrc": "jackp:17588:f6a63a", 
             "xsrc": "jackp:17588:3a7b50", 
             "marker": {
-                "color": "rgb(214, 39, 40)", 
+                "color": "rgb(40, 39, 214)", 
                 "symbol": "line-ew-open"
             }, 
             "mode": "lines+markers", 

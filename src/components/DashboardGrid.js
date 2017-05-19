@@ -1,10 +1,15 @@
 import React from 'react';
 
-import R from 'ramda'
-import Radium from 'radium'
+import R from 'ramda';
+import Radium from 'radium';
+
+import * as d3 from 'd3-dsv';
+import * as fs from 'fs';
 
 import {Responsive, WidthProvider} from 'react-grid-layout';
 const ResponsiveReactGridLayout = WidthProvider(Responsive);
+
+import PlotForm from '../components/PlotForm.react.js';
 
 import Plotly from 'plotly.js';
 import createPlotlyComponent from '../components/plotlyjs.react.js';
@@ -17,120 +22,46 @@ import '../css/skeleton.css';
 import '../css/styles.css';
 import '../css/react-table.css';
 
-const mapUrl = 'https://raw.githubusercontent.com/jackparmer/dashboard-grid/master/test_data/eb_ob_ggplot2_restyled.json'
-const obDeathsUrl = 'https://raw.githubusercontent.com/jackparmer/dashboard-grid/master/test_data/eb_ob_barchart.json'
-const obDeathsCumulativeUrl = 'https://raw.githubusercontent.com/jackparmer/dashboard-grid/master/test_data/eb_ob_line.json'
-const obTable = 'https://raw.githubusercontent.com/jackparmer/dashboard-grid/master/test_data/eb_ob.csv'
-
-class PlotForm extends React.Component {
-    constructor(props) {
-        super(props);
-        this.state = {value: ''};
-
-        this.handleFormInputChange = this.handleFormInputChange.bind(this);
-
-        this.handleFormSubmit = this.handleFormSubmit.bind(this);
-        this.handleFormClose = this.handleFormClose.bind(this);
-    }
-
-    handleFormInputChange(event) {
-        this.setState({value: event.target.value});
-    }
-
-    handleFormSubmit(event) {
-        event.preventDefault();
-
-        var fig;
-        var parent = this;
-        var urlToFetch = this.state.value;
-
-        if( urlToFetch.substr(urlToFetch.length -3).toLowerCase() != 'csv'  ){
-            Plotly.d3.json( urlToFetch, 
-                function(error, figure) {
-                    if( error ){
-                        console.log( error, figure );              
-                        // maybe file is  a CSV instead
-                        Plotly.d3.csv( urlToFetch,
-                            function(error, csvArray ) {
-                                parent.props.handleSubmit( csvArray );
-                            });
-                    }
-                    else{
-                        fig = figure;
-                        console.log('FIG LAYOUT', fig.layout);
-                        parent.props.handleSubmit( { data:fig.data, layout:fig.layout } );
-                    }
-                } );
-        }
-        else{
-            Plotly.d3.csv( urlToFetch,
-                function(error, csvArray ) {
-                    parent.props.handleSubmit( csvArray );
-                           });                
-        }
-            
-    }
-
-    handleFormClose(event){
-        this.props.handleClose();
-    }
-
-    render() {
-        return (
-            <form onSubmit={this.handleFormSubmit} style={styles.plotForm}>
-                <label>Link to raw Plotly graph JSON:</label>
-                <input type="text" value={this.state.value} 
-                        onChange={this.handleFormInputChange} style={styles.plotLinkInput} />
-                <input type="submit" value="Submit" className="button-primary" />
-                <button onClick={this.handleFormClose} style={styles.cornerIcon} >Close</button>
-                <p>Examples (copy / paste):</p>
-                <p>Map:<br/><a href="#">{ mapUrl }</a></p>
-                <p>Outbreak Deaths:<br/><a href="#">
-                    https://raw.githubusercontent.com/jackparmer/dashboard-grid/master/test_data/eb_ob_barchart.json
-                </a></p>
-                <p>Outbreak Deaths (cumulative):<br/><a href="#">
-                    https://raw.githubusercontent.com/jackparmer/dashboard-grid/master/test_data/eb_ob_line.json
-                </a></p>
-                <p>CSV Table:<br/><a href="#">
-                    https://raw.githubusercontent.com/jackparmer/dashboard-grid/master/test_data/eb_ob.csv
-                </a></p>
-            </form>
-        );
-    }
-}
+import mapJSON from '../../test_data/eb_ob_ggplot2_restyled.json';
+import obDeathsJSON from '../../test_data/eb_ob_barchart.json';
+import obDeathsCumulativeJSON from '../../test_data/eb_ob_line.json';
+import csvJSON from '../../test_data/csv.json';
 
 function dfltPlot( plotChoice ){
 
-    var url;
+    var json;
 
     switch( plotChoice ){
         case 1:
-            url = mapUrl; break;
+            json = mapJSON; break;
         case 2: 
-            url = obDeathsUrl; break;
+            json = obDeathsJSON; break;
         case 3:
-            url = obDeathsCumulativeUrl; break;
+            json = obDeathsCumulativeJSON; break;
         default:
-            url = mapUrl; break;
+            json = mapJSON; break;
     }
 
-    console.log('Retrieving URL', url);
-
-    Plotly.d3.json( url,
-        function(error, figure) {          
-            if( error ){ console.log( error ) }
-            console.log(figure);
-            return figure;
-        }
-    );
+    return json;
 };
 
+
+function dfltTable(){
+    
+    var csvObj;
+    var csvStr = csvJSON.csv;
+
+    csvObj = d3.csvParse( csvStr );
+
+    return csvObj;
+}
+
+const cf = dfltTable();
 
 class DashboardGrid extends React.Component{
 
 	constructor(props) {
-		super(props);
-        
+		super(props);        
 	};
 
 	static defaultProps = {
@@ -146,15 +77,17 @@ class DashboardGrid extends React.Component{
 		mounted: false,
 		layouts: {lg: this.props.initialLayout},
         items: [
-			{ x: 0, y:0, w: 4, h:10, i: '0', figure: dfltPlot() },
-			{ x: 4, y:0, w: 4, h:10, i: '1', figure: dfltPlot() },      
-			{ x: 8, y:0, w: 4, h:10, i: '2', figure: dfltPlot() },      
+			{ x: 0, y:0, w: 4, h:15, i: '0', figure: dfltPlot(1) },
+			{ x: 4, y:0, w: 4, h:15, i: '1', figure: dfltPlot(2) },      
+			{ x: 8, y:0, w: 4, h:15, i: '2', figure: dfltPlot(3) },      
+            { x: 0, y:30, w: 12, h:15, i: '3', dataTable: dfltTable() },      
 		],
 		newCounter: 0,
         showPlotForm: false,
         plotInEditMode: false,
         newPlot: { data: [], layout: {} },
-        newTable: []
+        newTable: [],
+        dataSelection: [],
 	};
 
 	componentDidMount = () => {
@@ -184,26 +117,94 @@ class DashboardGrid extends React.Component{
                        displayModeBar: true, 
                        mapboxAccessToken: 'pk.eyJ1IjoiamFja3AiLCJhIjoidGpzN0lXVSJ9.7YK6eRwUNFwd3ODZff6JvA' };
 
+        let getColumnObj = ( firstRow ) => {
+            let columnHeaders = Object.keys( firstRow );
+            let columnKeyVals = columnHeaders.map( function(col){ return { Header: col, accessor: col } } );
+            return columnKeyVals            
+        }
+
 		let i = el.i;
         let drawPlot = true;
 
+        if( el.dataTable !== undefined ){
+            drawPlot = false;
+            let firstTableRow = el.dataTable[0];
+            el.dataColumns = getColumnObj( firstTableRow );            
+        }
+
         if( this.state.plotInEditMode !== false ){
+
+            // Updating an existing plot or table
+
             if( this.state.plotInEditMode === i ){
                 if( this.state.newPlot.data.length !== 0 ){
                     console.log('writing new plot', this.state);
-                    el.data = this.state.newPlot.data;
-                    el.plotly_layout = this.state.newPlot.layout;
+                    el.figure.data = this.state.newPlot.data;
+                    el.figure.layout = this.state.newPlot.layout;
                 }
                 else if( this.state.newTable.length !== 0 ){
                     drawPlot = false;
                     el.dataTable = this.state.newTable;
-                    let columnHeaders = Object.keys( this.state.newTable[0] );
-                    el.dataColumns = columnHeaders.map( function(col){ return { Header: col, accessor: col } } )
+                    let firstTableRow = el.dataTable[0];
+                    el.dataColumns = getColumnObj( firstTableRow );
                 }
             }
 
         }
+
+        var filterTrace = {};
+
+        if( this.state.dataSelection.length > 0 ){
+            if( el.figure !== undefined ){
+
+                let xaxis = el.figure.layout.xaxis.title.toLowerCase();
+                let yaxis = el.figure.layout.yaxis.title.toLowerCase();
+                let xDim, yDim;
+
+                if (xaxis == '' || xaxis == 'date') {
+                    xDim = 'PLOTLY_DATE'
+                } else if ( xaxis == 'lon' || xaxis == 'long' ) {
+                    xDim = 'LONG'
+                } 
+
+                if (yaxis == 'lat') {
+                    yDim = 'LAT';
+                } else if ( yaxis.includes('death') ) {
+                    yDim = 'OB_DEATH';
+                }
+                if( yaxis.includes('cumul') ){
+                    yDim = 'CS_DEATH';
+                }
+
+                var ds = this.state.dataSelection;
+
+                filterTrace = {  
+                    x: ds.map( function( row ){ return row[xDim] } ),
+                    y: ds.map( function( row ){ return row[yDim] } ),
+                    marker: { color:'red' },
+                    mode: 'markers',
+                    name: 'Selection'
+                }
+
+            }
+            else{
+                el.dataTable = this.state.dataSelection;
+                let firstTableRow = el.dataTable[0];
+                el.dataColumns = getColumnObj( firstTableRow );                          
+            }
+        }
+
         if( drawPlot ){
+
+            var dataClone = R.clone( el.figure.data );
+
+            if( Object.keys(filterTrace).length > 0 ){ 
+                dataClone.push( filterTrace ); 
+            }
+
+            el.figure.layout.dragmode = 'lasso';
+            el.figure.layout.hovermode = 'closest';
+
    		    return (
   		        <div key={i} data-grid={el} >
                 	<span style={[styles.cornerIcon, styles.iconLeft]} onClick={this.editPlot.bind(this, i)}>Edit </span>
@@ -212,9 +213,9 @@ class DashboardGrid extends React.Component{
                         className="plotly-container" 
                         id={"plot"+i.toString()} 
                         style={styles.plotDivStyle}
-                        onSelected={this.crossfilter}
-		                data={el.data} 
-                        layout={el.layout} 
+                        onSelected={this.filterSelection.bind(this, i)}
+		                data={dataClone} 
+                        layout={el.figure.layout} 
                         config={config}/>
 		        </div>		                        
         	)
@@ -255,11 +256,46 @@ class DashboardGrid extends React.Component{
     editPlot = (i) => {
         console.log('edit plot', i)
         this.setState( { plotInEditMode: i.toString(), showPlotForm: true } );
-    }
+    };
 
-    crossfilter = ( e ) => {
-        console.log( 'selection made', e );
-    }
+    filterSelection = ( i, selectionArray ) => {
+
+        let selectedXPoints = selectionArray.points.map( function ( ea ){ return ea.x } );
+
+
+        let gridItems = this.state.items;
+        let item = gridItems.filter(function( o ) { return o.i == i });
+        let xt = item[0].figure.layout.xaxis.title;
+        
+        let filterColumn;
+
+        if( [ '', 'Date' ].includes(xt) ){
+            filterColumn = 'PLOTLY_DATE';
+            selectedXPoints = selectedXPoints.map( function(d){
+                    return new Date( d ).toISOString().split('T')[0].replace(/(^|-)0+/g, "$1");
+            } );
+        }
+
+        else if( [ 'Long' ].includes(xt) ){
+            filterColumn = 'LONG';
+        }
+
+        let matchingRows = cf.filter( function( row ){
+
+                let val = row[filterColumn];
+
+                if( isNaN(val) == false ){
+                    val = Number( row[filterColumn] );
+                }
+                
+                if( selectedXPoints.includes( val ) ){
+                    return row;
+                };
+            } );
+
+        this.setState({ dataSelection: matchingRows });
+
+    };
 
     handleNewPlot = ( newPlotOrTableObj ) => {
         console.log( 'plotting new plot', newPlotOrTableObj );
@@ -269,7 +305,7 @@ class DashboardGrid extends React.Component{
         else{
             this.setState({ newTable: newPlotOrTableObj, showPlotForm: false });
         }
-    }
+    };
 
     closePlotForm = () => {
         console.log('closing plot form');
@@ -278,36 +314,33 @@ class DashboardGrid extends React.Component{
                     newTable: [],
                     plotInEditMode: false, 
                     showPlotForm: false });
-    }   
+    };  
 
     render() {
     	
     	return (
             <div>
-
                 <div style={styles.editPanel} >
-			<button onClick={this.onAddItem} className="button-primary">Add Plot</button>
-                </div>
+			    <button onClick={this.onAddItem} className="button-primary">Add Plot</button>
+            </div>
 
-		<ResponsiveReactGridLayout className="layout"
-			{...this.props}
-			onBreakpointChange={this.onBreakpointChange}
-			onLayoutChange={this.onLayoutChange}
-			onAddItem={this.onAddItem}
-			onRemoveItem={this.onRemoveItem}
-			// WidthProvider option
+            <ResponsiveReactGridLayout className="layout"
+                {...this.props}
+			    onBreakpointChange={this.onBreakpointChange}
+			    onLayoutChange={this.onLayoutChange}
+			    onAddItem={this.onAddItem}
+			    onRemoveItem={this.onRemoveItem}
+			    // WidthProvider option
 			    measureBeforeMount={true}
-			useCSSTransforms={this.state.mounted}>		                    		         
-	        
-			{R.map(this.drawPlotBox, this.state.items)}
+			    useCSSTransforms={this.state.mounted}>		                    		         	       
+                {R.map(this.drawPlotBox, this.state.items)}
+            </ResponsiveReactGridLayout>
 
-                </ResponsiveReactGridLayout>
-
-                {(this.state.showPlotForm == true) ? 
-                    <PlotForm
-                        handleClose={this.closePlotForm}
-                        handleSubmit={this.handleNewPlot}  /> : 
-                    null}
+            {(this.state.showPlotForm == true) ? 
+            <PlotForm
+                handleClose={this.closePlotForm}
+                handleSubmit={this.handleNewPlot}  /> : 
+             null}
 
 	    	</div>
 		)
@@ -320,13 +353,7 @@ var styles = {
     iconRight: { right: '2px' },
     iconLeft: { right: '20px' },
     plotDivStyle: { height: '100%', width: '100%' },
-    editPanel: { position: 'absolute', bottom: '10px', left: '10px', zIndex: 99 },
-    plotForm: { padding: '50px 100px', border: '1px solid #ccc', maxWidth: '700px', 
-                width: '50%', margin: '0 auto', borderRadius: '2px', maxHeight: '450px', 
-                position: 'absolute', left: 0, right: 0, top: '200px', bottom: 0, 
-                background: 'whitesmoke', height: '50%' },
-    plotLinkInput: { width: '100%', padding: '10px', borderRadius: '4px', 
-            border: '1px solid #ccc', margin: '10px 0' }
+    editPanel: { position: 'absolute', top: '10px', left: '10px', zIndex: 99 }
 }
 
 DashboardGrid = Radium(DashboardGrid)
