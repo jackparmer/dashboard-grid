@@ -157,36 +157,35 @@ class DashboardGrid extends React.Component{
         if( this.state.dataSelection.length > 0 ){
             if( el.figure !== undefined ){
 
-            let xaxis = el.figure.layout.xaxis.title.toLowerCase();
-            let yaxis = el.figure.layout.yaxis.title.toLowerCase();
-            let xDim, yDim;
+                let xaxis = el.figure.layout.xaxis.title.toLowerCase();
+                let yaxis = el.figure.layout.yaxis.title.toLowerCase();
+                let xDim, yDim;
 
-            if (xaxis == '' || xaxis == 'date') {
-                xDim = 'PLOTLY_DATE'
-            } else if ( xaxis == 'lon' || xaxis == 'long' ) {
-                xDim = 'LONG'
-            } 
+                if (xaxis == '' || xaxis == 'date') {
+                    xDim = 'PLOTLY_DATE'
+                } else if ( xaxis == 'lon' || xaxis == 'long' ) {
+                    xDim = 'LONG'
+                } 
 
-            if (yaxis == 'lat') {
-                yDim = 'LAT';
-            } else if ( yaxis.includes('death') ) {
-                yDim = 'OB_DEATH';
-            }
-            if( yaxis.includes('cumul') ){
-                yDim = 'CS_DEATH';
-            }
+                if (yaxis == 'lat') {
+                    yDim = 'LAT';
+                } else if ( yaxis.includes('death') ) {
+                    yDim = 'OB_DEATH';
+                }
+                if( yaxis.includes('cumul') ){
+                    yDim = 'CS_DEATH';
+                }
 
-            var ds = this.state.dataSelection;
+                var ds = this.state.dataSelection;
 
-            filterTrace = {  
-                x: ds.map( function( row ){ return row[xDim] } ),
-                y: ds.map( function( row ){ return row[yDim] } ),
-                marker: { color:'red' },
-                mode: 'markers',
-                name: 'Selection'
-            }
+                filterTrace = {  
+                    x: ds.map( function( row ){ return row[xDim] } ),
+                    y: ds.map( function( row ){ return row[yDim] } ),
+                    marker: { color:'red' },
+                    mode: 'markers',
+                    name: 'Selection'
+                }
 
-            console.log( 'filter trace', filterTrace );
             }
             else{
                 el.dataTable = this.state.dataSelection;
@@ -268,8 +267,6 @@ class DashboardGrid extends React.Component{
         let item = gridItems.filter(function( o ) { return o.i == i });
         let xt = item[0].figure.layout.xaxis.title;
         
-        console.log( 'xlabel', xt );
-
         let filterColumn;
 
         if( [ '', 'Date' ].includes(xt) ){
@@ -283,10 +280,6 @@ class DashboardGrid extends React.Component{
             filterColumn = 'LONG';
         }
 
-        console.log( 'Selected X points: ', selectedXPoints );
-
-        console.log( 'Filter column', filterColumn );
-
         let matchingRows = cf.filter( function( row ){
 
                 let val = row[filterColumn];
@@ -299,8 +292,6 @@ class DashboardGrid extends React.Component{
                     return row;
                 };
             } );
-
-        console.log( 'Rows with matching LONG', matchingRows );
 
         this.setState({ dataSelection: matchingRows });
 
@@ -329,30 +320,27 @@ class DashboardGrid extends React.Component{
     	
     	return (
             <div>
-
                 <div style={styles.editPanel} >
-			<button onClick={this.onAddItem} className="button-primary">Add Plot</button>
-                </div>
+			    <button onClick={this.onAddItem} className="button-primary">Add Plot</button>
+            </div>
 
-		<ResponsiveReactGridLayout className="layout"
-			{...this.props}
-			onBreakpointChange={this.onBreakpointChange}
-			onLayoutChange={this.onLayoutChange}
-			onAddItem={this.onAddItem}
-			onRemoveItem={this.onRemoveItem}
-			// WidthProvider option
+            <ResponsiveReactGridLayout className="layout"
+                {...this.props}
+			    onBreakpointChange={this.onBreakpointChange}
+			    onLayoutChange={this.onLayoutChange}
+			    onAddItem={this.onAddItem}
+			    onRemoveItem={this.onRemoveItem}
+			    // WidthProvider option
 			    measureBeforeMount={true}
-			useCSSTransforms={this.state.mounted}>		                    		         
-	        
-			{R.map(this.drawPlotBox, this.state.items)}
+			    useCSSTransforms={this.state.mounted}>		                    		         	       
+                {R.map(this.drawPlotBox, this.state.items)}
+            </ResponsiveReactGridLayout>
 
-                </ResponsiveReactGridLayout>
-
-                {(this.state.showPlotForm == true) ? 
-                    <PlotForm
-                        handleClose={this.closePlotForm}
-                        handleSubmit={this.handleNewPlot}  /> : 
-                    null}
+            {(this.state.showPlotForm == true) ? 
+            <PlotForm
+                handleClose={this.closePlotForm}
+                handleSubmit={this.handleNewPlot}  /> : 
+             null}
 
 	    	</div>
 		)

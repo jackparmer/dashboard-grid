@@ -56,6 +56,25 @@ function dfltTable(){
     return csvObj;
 }
 
+(function() {
+    var throttle = function(type, name, obj) {
+        obj = obj || window;
+        var running = false;
+        var func = function() {
+            if (running) { return; }
+            running = true;
+            requestAnimationFrame(function() {
+                    obj.dispatchEvent(new CustomEvent(name));
+                    running = false;
+                });
+        };
+        obj.addEventListener(type, func);
+    };
+
+    /* init - you can init any event */
+    throttle("resize", "optimizedResize");
+})();
+
 const cf = dfltTable();
 
 class DashboardGrid extends React.Component{
@@ -69,7 +88,8 @@ class DashboardGrid extends React.Component{
 		rowHeight: 30,
 		onLayoutChange: function() {},
 		onRemoveItem: function() {},
-		cols: {lg: 12, md: 10, sm: 6, xs: 4, xxs: 2},
+		cols: {lg: 12, md: 12, sm: 12, xs: 6, xxs: 6},
+        breakpoints: {lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0}
 	};
 
 	state = {
@@ -77,10 +97,10 @@ class DashboardGrid extends React.Component{
 		mounted: false,
 		layouts: {lg: this.props.initialLayout},
         items: [
-			{ x: 0, y:0, w: 4, h:15, i: '0', figure: dfltPlot(1) },
-			{ x: 4, y:0, w: 4, h:15, i: '1', figure: dfltPlot(2) },      
-			{ x: 8, y:0, w: 4, h:15, i: '2', figure: dfltPlot(3) },      
-            { x: 0, y:30, w: 12, h:15, i: '3', dataTable: dfltTable() },      
+			{ x: 0, y:0, w: 6, h:15, i: '0', figure: dfltPlot(1) },
+			{ x: 6, y:0, w: 6, h:15, i: '1', figure: dfltPlot(2) },      
+			{ x: 0, y:0, w: 12, h:10, i: '2', figure: dfltPlot(3) },      
+            { x: 0, y:0, w: 12, h:15, i: '3', dataTable: dfltTable() },      
 		],
 		newCounter: 0,
         showPlotForm: false,
@@ -92,7 +112,14 @@ class DashboardGrid extends React.Component{
 
 	componentDidMount = () => {
 		this.setState({mounted: true});
+        window.addEventListener("optimizedResize", this.updateDimensions);
 	};
+
+    updateDimensions = () => {
+        this.setState({
+                windowWidth: window.innerWidth
+            });
+    };
 
 	onBreakpointChange = (breakpoint) => {
 		this.setState({
